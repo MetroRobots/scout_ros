@@ -14,13 +14,11 @@
   <url type="repository">TODO</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
-  <depend>roscpp</depend>
   <depend>scout_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>ugv_sdk</depend>
-  <build_depend>roslaunch</build_depend>
-  <exec_depend>controller_manager</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <export>

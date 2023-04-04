@@ -1,9 +1,8 @@
 #include <memory>
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <tf/transform_broadcaster.h>
 
 #include "ugv_sdk/mobile_robot/scout_robot.hpp"
 #include "ugv_sdk/utilities/protocol_detector.hpp"
@@ -18,12 +17,21 @@ int main(int argc, char** argv)
   // setup ROS node
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("scout_odom");
-  rclcpp::Node node(""), private_node("~");
+
+  // Declare params
+  node->declare_parameter("is_scout_mini", false);
+  node->declare_parameter("port_name", std::string("can0"));
+  node->declare_parameter("odom_frame", std::string("odom"));
+  node->declare_parameter("base_frame", std::string("base_link"));
+  node->declare_parameter("simulated_robot", false);
+  node->declare_parameter("control_rate", 50);
+  node->declare_parameter("odom_topic_name", std::string("odom"));
+  node->declare_parameter("pub_tf", true);
 
   // check whether controlling scout mini
-  bool is_scout_mini = false;
-  //private_node.param<bool>("is_scout_mini", is_scout_mini, false);
-  node.getParam("is_scout_mini", is_scout_mini);
+  bool is_scout_mini;
+  node->get_parameter("is_scout_mini", is_scout_mini);
+
   std::cout << "Working as scout mini: " << is_scout_mini << std::endl;
 
   // check protocol version
@@ -53,19 +61,19 @@ int main(int argc, char** argv)
   catch (const std::exception error)
   {
     RCLCPP_ERROR(rclcpp::get_logger("ScoutBase"), "please bringup up can or make sure can port exist");
-    ros::shutdown();
+    rclcpp::shutdown();
   }
-  ScoutROSMessenger messenger(robot.get(), &node);
+  ScoutROSMessenger messenger(robot.get(), node);
 
   // fetch parameters before connecting to rt
   std::string port_name;
-  private_node.param<std::string>("port_name", port_name, std::string("can0"));
-  private_node.param<std::string>("odom_frame", messenger.odom_frame_, std::string("odom"));
-  private_node.param<std::string>("base_frame", messenger.base_frame_, std::string("base_link"));
-  private_node.param<bool>("simulated_robot", messenger.simulated_robot_, false);
-  private_node.param<int>("control_rate", messenger.sim_control_rate_, 50);
-  private_node.param<std::string>("odom_topic_name", messenger.odom_topic_name_, std::string("odom"));
-  private_node.param<bool>("pub_tf", messenger.pub_tf, true);
+  node->get_parameter("port_name", port_name);
+  node->get_parameter("odom_frame", messenger.odom_frame_);
+  node->get_parameter("base_frame", messenger.base_frame_);
+  node->get_parameter("simulated_robot", messenger.simulated_robot_);
+  node->get_parameter("control_rate", messenger.sim_control_rate_);
+  node->get_parameter("odom_topic_name", messenger.odom_topic_name_);
+  node->get_parameter("pub_tf", messenger.pub_tf);
   if (!messenger.simulated_robot_)
   {
     // connect to robot and setup ROS subscription
