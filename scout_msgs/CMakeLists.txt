@@ -1,16 +1,17 @@
 
 
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(scout_msgs)
+find_package(ament_cmake REQUIRED)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS
-  std_msgs
-  message_generation
-)
+
+find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
+set(CMAKE_CXX_STANDARD 1 4)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -45,16 +46,16 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-    FILES
-    ScoutStatus.msg
-    ScoutMotorState.msg
-    ScoutLightState.msg
-    ScoutLightCmd.msg
-    ScoutBmsStatus.msg
-    ScoutDriverState.msg
-)
 
+rosidl_generate_interfaces(
+    ${PROJECT_NAME}
+        msg/ScoutLightState.msg
+        msg/ScoutLightCmd.msg
+        msg/ScoutStatus.msg
+        msg/ScoutBmsStatus.msg
+        msg/ScoutMotorState.msg
+        msg/ScoutDriverState.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -71,12 +72,6 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
-
-catkin_package(CATKIN_DEPENDS std_msgs message_runtime)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -107,12 +102,6 @@ catkin_package(CATKIN_DEPENDS std_msgs message_runtime)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES scout_python
-#  CATKIN_DEPENDS rospy scout_msgs std_msgs
-#  DEPENDS system_lib
-)
 
 ###########
 ## Build ##
@@ -120,10 +109,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-#  include
-  ${catkin_INCLUDE_DIRS}
-)
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -202,3 +188,4 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+ament_package()

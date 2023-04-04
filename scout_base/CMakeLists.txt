@@ -1,33 +1,24 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(scout_base)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
-
-find_package(catkin REQUIRED COMPONENTS
-    roslaunch
-    roscpp
-    sensor_msgs
-    std_msgs
-    geometry_msgs
-    tf2
-    tf2_ros
-    ugv_sdk
-    scout_msgs
-)
+find_package(ament_cmake REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(roslaunch REQUIRED)
+find_package(scout_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(ugv_sdk REQUIRED)
 
 # find_package(Boost REQUIRED COMPONENTS chrono)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES scout_messenger
-  CATKIN_DEPENDS ugv_sdk scout_msgs
-#   DEPENDS Boost
-)
 
 ###########
 ## Build ##
@@ -37,27 +28,32 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
     include
-    ${catkin_INCLUDE_DIRS}
 )
 
 add_library(scout_messenger STATIC src/scout_messenger.cpp)
-target_link_libraries(scout_messenger ${catkin_LIBRARIES})
-add_dependencies(scout_messenger ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ament_target_dependencies(scout_messenger "tf2_ros" "nav_msgs" "tf2_ros" "rclcpp" "sensor_msgs" "scout_msgs")
 
 add_executable(scout_base_node src/scout_base_node.cpp)
-target_link_libraries(scout_base_node scout_messenger ${catkin_LIBRARIES})
+ament_target_dependencies(scout_base_node scout_messenger "tf2_ros" "nav_msgs" "tf2_ros" "rclcpp" "sensor_msgs" "scout_msgs")
+ament_export_include_directories(include)
+ament_export_libraries(scout_messenger)
+ament_export_dependencies(ugv_sdk scout_msgs)
+ament_package()
 
 #############
 ## Install ##
 #############
 
 install(TARGETS scout_messenger scout_base_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+  DESTINATION include/${PROJECT_NAME}
+)
 
 install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  DESTINATION share/${PROJECT_NAME}
+)

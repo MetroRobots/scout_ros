@@ -1,8 +1,8 @@
 #include <memory>
 
-#include <ros/ros.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/JointState.h>
+#include "rclcpp/rclcpp.hpp"
+#include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <tf/transform_broadcaster.h>
 
 #include "ugv_sdk/mobile_robot/scout_robot.hpp"
@@ -16,8 +16,9 @@ std::unique_ptr<ScoutRobot> robot;
 int main(int argc, char** argv)
 {
   // setup ROS node
-  ros::init(argc, argv, "scout_odom");
-  ros::NodeHandle node(""), private_node("~");
+  rclcpp::init(argc, argv);
+  auto node = rclcpp::Node::make_shared("scout_odom");
+  rclcpp::Node node(""), private_node("~");
 
   // check whether controlling scout mini
   bool is_scout_mini = false;
@@ -51,7 +52,7 @@ int main(int argc, char** argv)
   }
   catch (const std::exception error)
   {
-    ROS_ERROR("please bringup up can or make sure can port exist");
+    RCLCPP_ERROR(rclcpp::get_logger("ScoutBase"), "please bringup up can or make sure can port exist");
     ros::shutdown();
   }
   ScoutROSMessenger messenger(robot.get(), &node);
@@ -72,20 +73,20 @@ int main(int argc, char** argv)
     {
       robot->Connect(port_name);
       robot->EnableCommandedMode();
-      ROS_INFO("Using CAN bus to talk with the robot");
+      RCLCPP_INFO(rclcpp::get_logger("ScoutBase"), "Using CAN bus to talk with the robot");
     }
     else
     {
       //      robot->Connect(port_name, 115200);
-      ROS_INFO("Only CAN bus interface is supported for now");
+      RCLCPP_INFO(rclcpp::get_logger("ScoutBase"), "Only CAN bus interface is supported for now");
     }
   }
 
   messenger.SetupSubscription();
 
   // publish robot state at 50Hz while listening to twist commands
-  ros::Rate rate(50);
-  while (ros::ok())
+  rclcpp::Rate rate(50);
+  while (rclcpp::ok())
   {
     if (!messenger.simulated_robot_)
     {
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
 
       messenger.PublishSimStateToROS(linear, angular);
     }
-    ros::spinOnce();
+    rclcpp::spin_some(node);
     rate.sleep();
   }
 

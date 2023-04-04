@@ -12,22 +12,24 @@
 
 #include <string>
 
-#include <ros/ros.h>
-#include <nav_msgs/Odometry.h>
+#include "rclcpp/rclcpp.hpp"
+#include <nav_msgs/msg/odometry.hpp>
 // #include <tf/transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
-#include "scout_msgs/ScoutLightCmd.h"
+#include <scout_msgs/msg/scout_light_cmd.hpp>
 #include "ugv_sdk/mobile_robot/scout_robot.hpp"
 #include <mutex>
+#include <scout_msgs/msg/scout_status.hpp>
+#include <scout_msgs/msg/scout_bms_status.hpp>
 
 namespace westonrobot
 {
 class ScoutROSMessenger
 {
 public:
-  explicit ScoutROSMessenger(ros::NodeHandle* nh);
-  ScoutROSMessenger(ScoutRobot* scout, ros::NodeHandle* nh);
+  explicit ScoutROSMessenger(rclcpp::Node* nh);
+  ScoutROSMessenger(ScoutRobot* scout, rclcpp::Node* nh);
 
   std::string odom_frame_;
   std::string base_frame_;
@@ -46,16 +48,19 @@ public:
 
 private:
   ScoutRobot* scout_;
-  ros::NodeHandle* nh_;
+  rclcpp::Node* nh_;
 
   std::mutex twist_mutex_;
-  geometry_msgs::Twist current_twist_;
+  geometry_msgs::msg::Twist current_twist_;
 
   ros::Publisher odom_publisher_;
   ros::Publisher status_publisher_;
-  ros::Publisher BMS_status_publisher_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_publisher_;
+  rclcpp::Publisher<scout_msgs::msg::ScoutStatus>::SharedPtr status_publisher_;
+  rclcpp::Publisher<scout_msgs::msg::ScoutBmsStatus>::SharedPtr BMS_status_publisher_;
   ros::Subscriber motion_cmd_subscriber_;
-  ros::Subscriber light_cmd_subscriber_;
+  rclcpp::Subscription<None>::SharedPtr motion_cmd_subscriber_;
+  rclcpp::Subscription<None>::SharedPtr light_cmd_subscriber_;
   tf2_ros::TransformBroadcaster tf_broadcaster_;
 
   // speed variables
@@ -65,11 +70,11 @@ private:
   double position_y_ = 0.0;
   double theta_ = 0.0;
 
-  ros::Time last_time_;
-  ros::Time current_time_;
+  rclcpp::Time last_time_;
+  rclcpp::Time current_time_;
 
-  void TwistCmdCallback(const geometry_msgs::Twist::ConstPtr& msg);
-  void LightCmdCallback(const scout_msgs::ScoutLightCmd::ConstPtr& msg);
+  void TwistCmdCallback(const geometry_msgs::msg::Twist::ConstSharedPtr& msg);
+  void LightCmdCallback(const scout_msgs::msg::ScoutLightCmd::ConstSharedPtr& msg);
   void PublishOdometryToROS(double linear, double angular, double dt);
 };
 }  // namespace westonrobot

@@ -11,35 +11,35 @@
 
 #include <tf/transform_broadcaster.h>
 
-#include "scout_msgs/ScoutStatus.h"
-#include "scout_msgs/ScoutBmsStatus.h"
-#include "scout_msgs/ScoutLightCmd.h"
+#include <scout_msgs/msg/scout_status.hpp>
+#include <scout_msgs/msg/scout_bms_status.hpp>
+#include <scout_msgs/msg/scout_light_cmd.hpp>
 
 namespace westonrobot
 {
-ScoutROSMessenger::ScoutROSMessenger(ros::NodeHandle* nh) : scout_(nullptr), nh_(nh)
+ScoutROSMessenger::ScoutROSMessenger(rclcpp::Node* nh) : scout_(nullptr), nh_(nh)
 {
 }
 
-ScoutROSMessenger::ScoutROSMessenger(ScoutRobot* scout, ros::NodeHandle* nh) : scout_(scout), nh_(nh)
+ScoutROSMessenger::ScoutROSMessenger(ScoutRobot* scout, rclcpp::Node* nh) : scout_(scout), nh_(nh)
 {
 }
 
 void ScoutROSMessenger::SetupSubscription()
 {
   // odometry publisher
-  odom_publisher_ = nh_->advertise<nav_msgs::Odometry>(odom_topic_name_, 50);
-  status_publisher_ = nh_->advertise<scout_msgs::ScoutStatus>("/scout_status", 10);
-  BMS_status_publisher_ = nh_->advertise<scout_msgs::ScoutBmsStatus>("/BMS_status", 10);
+  odom_publisher_ = nh_->create_publisher<nav_msgs::msg::Odometry>(odom_topic_name_);
+  status_publisher_ = nh_->create_publisher<scout_msgs::msg::ScoutStatus>("/scout_status");
+  BMS_status_publisher_ = nh_->create_publisher<scout_msgs::msg::ScoutBmsStatus>("/BMS_status");
 
   // cmd subscriber
   motion_cmd_subscriber_ =
-      nh_->subscribe<geometry_msgs::Twist>("/cmd_vel", 5, &ScoutROSMessenger::TwistCmdCallback, this);
-  light_cmd_subscriber_ =
-      nh_->subscribe<scout_msgs::ScoutLightCmd>("/scout_light_control", 5, &ScoutROSMessenger::LightCmdCallback, this);
+      nh_->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 5, &ScoutROSMessenger::TwistCmdCallback, this)
+          light_cmd_subscriber_ = nh_->create_subscription<scout_msgs::msg::ScoutLightCmd>(
+          "/scout_light_control", 5, &ScoutROSMessenger::LightCmdCallback, this)
 }
 
-void ScoutROSMessenger::TwistCmdCallback(const geometry_msgs::Twist::ConstPtr& msg)
+void ScoutROSMessenger::TwistCmdCallback(const geometry_msgs::msg::Twist::ConstSharedPtr& msg)
 {
   if (!simulated_robot_)
   {
@@ -50,7 +50,7 @@ void ScoutROSMessenger::TwistCmdCallback(const geometry_msgs::Twist::ConstPtr& m
     std::lock_guard<std::mutex> guard(twist_mutex_);
     current_twist_ = *msg.get();
   }
-  // ROS_INFO("cmd received:%f, %f", msg->linear.x, msg->angular.z);
+  // RCLCPP_INFO(rclcpp::get_logger("ScoutBase"), "cmd received:%f, %f", msg->linear.x, msg->angular.z);
 }
 
 void ScoutROSMessenger::GetCurrentMotionCmdForSim(double& linear, double& angular)
@@ -60,7 +60,7 @@ void ScoutROSMessenger::GetCurrentMotionCmdForSim(double& linear, double& angula
   angular = current_twist_.angular.z;
 }
 
-void ScoutROSMessenger::LightCmdCallback(const scout_msgs::ScoutLightCmd::ConstPtr& msg)
+void ScoutROSMessenger::LightCmdCallback(const scout_msgs::msg::ScoutLightCmd::ConstSharedPtr& msg)
 {
   if (!simulated_robot_)
   {
@@ -70,22 +70,22 @@ void ScoutROSMessenger::LightCmdCallback(const scout_msgs::ScoutLightCmd::ConstP
 
       switch (msg->front_mode)
       {
-      case scout_msgs::ScoutLightCmd::LIGHT_CONST_OFF:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_CONST_OFF:
       {
         cmd.front_light.mode = CONST_OFF;
         break;
       }
-      case scout_msgs::ScoutLightCmd::LIGHT_CONST_ON:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_CONST_ON:
       {
         cmd.front_light.mode = CONST_ON;
         break;
       }
-      case scout_msgs::ScoutLightCmd::LIGHT_BREATH:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_BREATH:
       {
         cmd.front_light.mode = BREATH;
         break;
       }
-      case scout_msgs::ScoutLightCmd::LIGHT_CUSTOM:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_CUSTOM:
       {
         cmd.front_light.mode = LightMode::CUSTOM;
         cmd.front_light.custom_value = msg->front_custom_value;
@@ -95,22 +95,22 @@ void ScoutROSMessenger::LightCmdCallback(const scout_msgs::ScoutLightCmd::ConstP
 
       switch (msg->rear_mode)
       {
-      case scout_msgs::ScoutLightCmd::LIGHT_CONST_OFF:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_CONST_OFF:
       {
         cmd.rear_light.mode = CONST_OFF;
         break;
       }
-      case scout_msgs::ScoutLightCmd::LIGHT_CONST_ON:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_CONST_ON:
       {
         cmd.rear_light.mode = CONST_ON;
         break;
       }
-      case scout_msgs::ScoutLightCmd::LIGHT_BREATH:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_BREATH:
       {
         cmd.rear_light.mode = BREATH;
         break;
       }
-      case scout_msgs::ScoutLightCmd::LIGHT_CUSTOM:
+      case scout_msgs::msg::ScoutLightCmd::LIGHT_CUSTOM:
       {
         cmd.rear_light.mode = CUSTOM;
         cmd.rear_light.custom_value = msg->rear_custom_value;
@@ -134,7 +134,7 @@ void ScoutROSMessenger::LightCmdCallback(const scout_msgs::ScoutLightCmd::ConstP
 
 void ScoutROSMessenger::PublishStateToROS()
 {
-  current_time_ = ros::Time::now();
+  current_time_ = rclcpp::Time::now();
   double dt = (current_time_ - last_time_).toSec();
 
   static bool init_run = true;
@@ -149,8 +149,8 @@ void ScoutROSMessenger::PublishStateToROS()
   auto actuator_state = scout_->GetActuatorState();
 
   // publish scout state message
-  scout_msgs::ScoutStatus status_msg;
-  scout_msgs::ScoutBmsStatus bms_status;
+  scout_msgs::msg::ScoutStatus status_msg;
+  scout_msgs::msg::ScoutBmsStatus bms_status;
 
   status_msg.header.stamp = current_time_;
   status_msg.linear_velocity = robot_state.motion_state.linear_velocity;
@@ -197,9 +197,9 @@ void ScoutROSMessenger::PublishStateToROS()
   //      bms_status.Alarm_Status_2 = state.Alarm_Status_2;
   //      bms_status.Warning_Status_1 = state.Warning_Status_1;
   //      bms_status.Warning_Status_2 = state.Warning_Status_2;
-  BMS_status_publisher_.publish(bms_status);
+  BMS_status_publisher_->publish(bms_status);
 
-  status_publisher_.publish(status_msg);
+  status_publisher_->publish(status_msg);
 
   // publish odometry and tf
   PublishOdometryToROS(robot_state.motion_state.linear_velocity, robot_state.motion_state.angular_velocity, dt);
@@ -210,7 +210,7 @@ void ScoutROSMessenger::PublishStateToROS()
 
 void ScoutROSMessenger::PublishSimStateToROS(double linear, double angular)
 {
-  current_time_ = ros::Time::now();
+  current_time_ = rclcpp::Time::now();
 
   double dt = (current_time_ - last_time_).toSec();
 
@@ -223,7 +223,7 @@ void ScoutROSMessenger::PublishSimStateToROS(double linear, double angular)
   }
 
   // publish scout state message
-  scout_msgs::ScoutStatus status_msg;
+  scout_msgs::msg::ScoutStatus status_msg;
 
   status_msg.header.stamp = current_time_;
 
@@ -236,7 +236,7 @@ void ScoutROSMessenger::PublishSimStateToROS(double linear, double angular)
   status_msg.battery_voltage = 29.5;
   status_msg.light_control_enabled = false;
 
-  status_publisher_.publish(status_msg);
+  status_publisher_->publish(status_msg);
 
   // publish odometry and tf
   PublishOdometryToROS(linear, angular, dt);
@@ -259,10 +259,10 @@ void ScoutROSMessenger::PublishOdometryToROS(double linear, double angular, doub
   position_y_ += d_y;
   theta_ += d_theta;
 
-  geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(theta_);
+  geometry_msgs::msg::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(theta_);
 
   // publish tf transformation
-  geometry_msgs::TransformStamped tf_msg;
+  geometry_msgs::msg::TransformStamped tf_msg;
   tf_msg.header.stamp = current_time_;
   tf_msg.header.frame_id = odom_frame_;
   tf_msg.child_frame_id = base_frame_;
@@ -276,7 +276,7 @@ void ScoutROSMessenger::PublishOdometryToROS(double linear, double angular, doub
     tf_broadcaster_.sendTransform(tf_msg);
 
   // publish odometry and tf messages
-  nav_msgs::Odometry odom_msg;
+  nav_msgs::msg::Odometry odom_msg;
   odom_msg.header.stamp = current_time_;
   odom_msg.header.frame_id = odom_frame_;
   odom_msg.child_frame_id = base_frame_;
@@ -290,6 +290,6 @@ void ScoutROSMessenger::PublishOdometryToROS(double linear, double angular, doub
   odom_msg.twist.twist.linear.y = 0.0;
   odom_msg.twist.twist.angular.z = angular_speed_;
 
-  odom_publisher_.publish(odom_msg);
+  odom_publisher_->publish(odom_msg);
 }
 }  // namespace westonrobot
