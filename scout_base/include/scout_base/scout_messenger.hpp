@@ -1,9 +1,9 @@
-/* 
+/*
  * scout_messenger.hpp
- * 
+ *
  * Created on: Jun 14, 2019 10:24
- * Description: 
- * 
+ * Description:
+ *
  * Copyright (c) 2019 Ruixiang Du (rdu)
  */
 

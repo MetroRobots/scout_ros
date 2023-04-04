@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
-<robot name="scout_v2" 
+<robot name="scout_v2"
     xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <xacro:arg name="robot_namespace" default="/" /> 
+    <xacro:arg name="robot_namespace" default="/" />
 
     <xacro:include filename="$(find scout_description)/urdf/scout_wheel_type1.xacro" />
     <xacro:include filename="$(find scout_description)/urdf/scout_wheel_type2.xacro" />

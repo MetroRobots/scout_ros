@@ -2,7 +2,7 @@
 
 ## ROS Packages 说明
 
-* scout_bringup: launch and configuration files to start ROS nodes 
+* scout_bringup: launch and configuration files to start ROS nodes
 * scout_base: a ROS wrapper around Scout SDK to monitor and control the robot
 * scout_msgs: scout related message definitions
 * (scout_ros: meta package for the Scout robot ROS packages)
@@ -33,31 +33,31 @@ $ sudo usermod -a -G dialout $USER
 ### 配置 CAN-TO-USB适配器
 
 1.  设置CAN转USB适配器，启用gs_usb内核模块（本指令需要搭配相应的硬件设备才可以使用，需要Linux内部版本>4.5）
-   
+
     ```
     $ sudo modprobe gs_usb
     ```
 
 2. 设置can设备参数
-   
+
    ```
    $ sudo ip link set can0 up type can bitrate 500000
    ```
 
 3. 如果在前面的步骤中没有发生错误，您可以使用以下指令查看can设备
-   
+
    ```
    $ ifconfig -a
    ```
 
 4. 安装和使用can-utils来测试硬件
-   
+
     ```
     $ sudo apt install can-utils
     ```
 
 5. 测试指令
-   
+
     ```
     # receiving data from can0
     $ candump can0
@@ -96,13 +96,13 @@ $ sudo usermod -a -G dialout $USER
 
 3. 启动 ROS nodes
 
-* 启动scout车节点 
+* 启动scout车节点
 
     ```
     $ roslaunch scout_bringup scout_minimal.launch
     ```
-    
-* 启动scout-mini车节点 
+
+* 启动scout-mini车节点
 
     ```
     $ roslaunch scout_bringup scout_mini_minimal.launch
@@ -114,6 +114,6 @@ $ sudo usermod -a -G dialout $USER
     $ roslaunch scout_bringup scout_teleop_keyboard.launch
     ```
 
-    **SAFETY PRECAUSION**: 
+    **SAFETY PRECAUSION**:
 
-    The default command values of the keyboard teleop node are high, make sure you decrease the speed commands before starting to control the robot with your keyboard! Have your remote controller ready to take over the control whenever necessary. 
+    The default command values of the keyboard teleop node are high, make sure you decrease the speed commands before starting to control the robot with your keyboard! Have your remote controller ready to take over the control whenever necessary.

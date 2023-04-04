@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "scout_odom");
   ros::NodeHandle node(""), private_node("~");
 
-  // check wether controlling scout mini
+  // check whether controlling scout mini
   bool is_scout_mini = false;
   //private_node.param<bool>("is_scout_mini", is_scout_mini, false);
   node.getParam("is_scout_mini",is_scout_mini);
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
           robot = std::unique_ptr<ScoutRobot>(
                       new ScoutRobot(ProtocolVersion::AGX_V2, is_scout_mini));
       } else {
-          std::cout << "Detected protocol: UNKONWN" << std::endl;
+          std::cout << "Detected protocol: UNKNOWN" << std::endl;
           return -1;
       }
       if (robot == nullptr)

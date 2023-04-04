@@ -1,9 +1,9 @@
-/* 
+/*
  * scout_params.hpp
- * 
+ *
  * Created on: Sep 27, 2019 15:08
- * Description: 
- * 
+ * Description:
+ *
  * Copyright (c) 2020 Ruixiang Du (rdu)
  */
 

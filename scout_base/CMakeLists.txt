@@ -4,18 +4,18 @@ project(scout_base)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS    
-    roslaunch 
-    roscpp 
+find_package(catkin REQUIRED COMPONENTS
+    roslaunch
+    roscpp
     sensor_msgs
     std_msgs
     geometry_msgs
-    tf2 
+    tf2
     tf2_ros
     ugv_sdk
     scout_msgs
 )
-    
+
 # find_package(Boost REQUIRED COMPONENTS chrono)
 
 ###################################

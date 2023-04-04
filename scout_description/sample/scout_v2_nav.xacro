@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<robot name="scout_v2" 
+<robot name="scout_v2"
     xmlns:xacro="http://ros.org/wiki/xacro">
 
     <xacro:include filename="$(find scout_base)/description/scout_v2.xacro" />
@@ -44,5 +44,5 @@
         <child link="laser" />
         <origin xyz="0.0 0.0 0.65" rpy="0 0 0" />
     </joint>
-    
+
 </robot>
