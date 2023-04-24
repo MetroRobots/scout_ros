@@ -24,6 +24,7 @@ ScoutROSMessenger::ScoutROSMessenger(rclcpp::Node::SharedPtr nh) : scout_(nullpt
 ScoutROSMessenger::ScoutROSMessenger(ScoutRobot* scout, rclcpp::Node::SharedPtr nh)
   : scout_(scout), nh_(nh), tf_broadcaster_(nh)
 {
+  last_time_ = nh_->now();
 }
 
 void ScoutROSMessenger::SetupSubscription()
