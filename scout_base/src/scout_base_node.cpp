@@ -93,7 +93,7 @@ int main(int argc, char** argv)
   messenger.SetupSubscription();
 
   // publish robot state at 50Hz while listening to twist commands
-  rclcpp::Rate rate(50);
+  rclcpp::Rate rate(50.0);
   while (rclcpp::ok())
   {
     if (!messenger.simulated_robot_)
