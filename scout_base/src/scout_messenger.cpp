@@ -262,7 +262,7 @@ void ScoutROSMessenger::PublishOdometryToROS(double linear, double angular, doub
   theta_ += d_theta;
 
   auto qqq = tf2::Quaternion();
-  qqq.setEuler(theta_, 0.0, 0.0);
+  qqq.setEuler(0.0, 0.0, theta_);
 
   geometry_msgs::msg::Quaternion odom_quat = tf2::toMsg(qqq);
 
